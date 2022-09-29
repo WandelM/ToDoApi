@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using ToDo.API.DataAccess;
 using ToDo.API.Dtos;
+using ToDo.API.Models;
 
 namespace ToDo.API.Controllers
 {
@@ -7,67 +10,59 @@ namespace ToDo.API.Controllers
     [ApiController]
     public class ToDoItemsController : ControllerBase
     {
-        private readonly IReadOnlyList<ToDoItemGetDto> _items;
+        private readonly IToDoItemsRepository _itemsRepository;
+        private readonly IMapper _mapper;
 
-        public ToDoItemsController()
+        public ToDoItemsController(IToDoItemsRepository itemsRepository, IMapper mapper)
         {
-            _items = new List<ToDoItemGetDto>()
-            {
-                new ToDoItemGetDto()
-                {
-                    Id = Guid.Parse("e7bd292e-405d-4845-98e6-007aa08eef98"),
-                    Name = "Mock Item 1",
-                    CreatedDate = DateTime.Now,
-                    Description = "This is simple description 1",
-                    DueDate = DateTime.Now.AddYears(2)
-                },
-                new ToDoItemGetDto()
-                {
-                    Id = Guid.Parse("b4960efd-00a1-4a80-834e-ba307f0e1592"),
-                    Name = "Mock Item 2",
-                    CreatedDate = DateTime.Now.AddDays(-5),
-                    Description = "This is simple description 2",
-                    DueDate = DateTime.Now.AddYears(2)
-                },
-                new ToDoItemGetDto()
-                {
-                    Id = Guid.Parse("a6960efd-00a1-4a80-834e-ba307f0e1592"),
-                    Name = "Mock Item 3",
-                    CreatedDate = DateTime.Now.AddDays(-10),
-                    Description = "This is simple description 3",
-                    DueDate = DateTime.Now.AddYears(2)
-                }
-            };
+            _itemsRepository = itemsRepository;
+            _mapper = mapper;
         }
 
-        [HttpGet("item")]
+        [HttpGet("{itemId}", Name = "GetItem")]
         [Produces(typeof(ToDoItemGetDto))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public ActionResult<ToDoItemGetDto> GetToDoItem([FromQuery]Guid itemId)
+        public async Task<ActionResult<ToDoItemGetDto>> GetToDoItemAsync(Guid itemId)
         {
             if (itemId.Equals(Guid.Empty))
                 return BadRequest();
 
-            var item = _items.FirstOrDefault(item => item.Id.Equals(itemId));
+            var item = await _itemsRepository.GetById(itemId);
 
             if(item == null)
                 return NotFound();
 
-            return Ok(item);
+            return Ok(_mapper.Map<ToDoItemGetDto>(item));
         }
 
         [HttpGet("items")]
         [Produces(typeof(IReadOnlyList<ToDoItemGetDto>))]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
-        public ActionResult<IReadOnlyList<ToDoItemGetDto>> GetToDoItems()
+        public async Task<ActionResult<IReadOnlyList<ToDoItemGetDto>>> GetToDoItemsAsync()
         {
-            if (_items.Any() == false)
+            var items = await _itemsRepository.GetAll();
+
+            if (items.Any() == false)
                 return NotFound();
 
-            return Ok(_items);
+            return Ok(_mapper.Map<IReadOnlyCollection<ToDoItemGetDto>>(items));
+        }
+
+        [HttpPost]
+        [ProducesResponseType(201)]
+        [ProducesResponseType(400)]
+        public async Task<ActionResult> CreateItemAsync([FromBody] ToDoItemPostDto toDoItem)
+        {
+            var mappedItem = _mapper.Map<ToDoItem>(toDoItem);
+
+            await _itemsRepository.CreateItemAsync(mappedItem);
+
+            var itemFromDb = _itemsRepository.GetById(mappedItem.Id);
+
+            return CreatedAtRoute("GetItem", new {ItemId = itemFromDb.Id}, itemFromDb);
         }
     }
 }
