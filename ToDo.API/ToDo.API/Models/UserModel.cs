@@ -7,5 +7,6 @@
         public string Password { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime LastLogIn { get; set; }
+        public IList<ToDoItem> ToDoItems { get; set; }
     }
 }
