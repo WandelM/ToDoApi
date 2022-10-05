@@ -13,6 +13,7 @@ namespace ToDo.API.DataAccess
                 new ToDoItem()
                 {
                     Id = Guid.Parse("e7bd292e-405d-4845-98e6-007aa08eef98"),
+                    UserId = Guid.Parse("7dcbd5f3-a61e-48de-8830-33cfcc570da0"),
                     Name = "Mock Item 1",
                     CreatedDate = DateTime.Now,
                     Description = "This is simple description 1",
@@ -21,6 +22,7 @@ namespace ToDo.API.DataAccess
                 new ToDoItem()
                 {
                     Id = Guid.Parse("b4960efd-00a1-4a80-834e-ba307f0e1592"),
+                    UserId = Guid.Parse("7dcbd5f3-a61e-48de-8830-33cfcc570da0"),
                     Name = "Mock Item 2",
                     CreatedDate = DateTime.Now.AddDays(-5),
                     Description = "This is simple description 2",
@@ -29,6 +31,7 @@ namespace ToDo.API.DataAccess
                 new ToDoItem()
                 {
                     Id = Guid.Parse("a6960efd-00a1-4a80-834e-ba307f0e1592"),
+                    UserId = Guid.Parse("7dcbd5f3-a61e-48de-8830-33cfcc570da0"),
                     Name = "Mock Item 3",
                     CreatedDate = DateTime.Now.AddDays(-10),
                     Description = "This is simple description 3",
@@ -37,18 +40,18 @@ namespace ToDo.API.DataAccess
             };
         }
 
-        public async Task<ToDoItem?> GetById(Guid id)
+        public async Task<ToDoItem?> GetById(Guid userId, Guid itemId)
         {
-            var item = _items.FirstOrDefault(x => x.Id == id);
+            var item = _items.FirstOrDefault(x => x.Id == itemId && x.UserId == userId);
 
             await Task.CompletedTask;
             return item;
         }
 
-        public async Task<IReadOnlyList<ToDoItem>> GetAll()
+        public async Task<IReadOnlyList<ToDoItem>> GetAll(Guid userId)
         {
             await Task.CompletedTask;
-            return _items.ToList();
+            return _items.Where(i => i.UserId == userId).ToList();
         }
 
         public async Task CreateItemAsync(ToDoItem toDoItem)

@@ -1,4 +1,3 @@
-using AutoMapper;
 using ToDo.API.DataAccess;
 using ToDo.API.Mappers;
 
@@ -12,6 +11,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(typeof(ToDoItemProfile));
 builder.Services.AddSingleton(typeof(IToDoItemsRepository), typeof(ToDoItemsRepository));
+builder.Services.AddSingleton(typeof(IUsersRepository), typeof(UsersRepository));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

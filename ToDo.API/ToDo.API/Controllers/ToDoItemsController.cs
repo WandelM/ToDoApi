@@ -8,6 +8,7 @@ namespace ToDo.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Produces("application/json")]
     public class ToDoItemsController : ControllerBase
     {
         private readonly IToDoItemsRepository _itemsRepository;
@@ -19,17 +20,17 @@ namespace ToDo.API.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet("{itemId}", Name = "GetItem")]
+        [HttpGet(Name = "GetItem")]
         [Produces(typeof(ToDoItemGetDto))]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<ToDoItemGetDto>> GetToDoItemAsync(Guid itemId)
+        public async Task<ActionResult<ToDoItemGetDto>> GetToDoItemAsync([FromQuery]Guid userId, [FromQuery]Guid itemId)
         {
             if (itemId.Equals(Guid.Empty))
                 return BadRequest();
 
-            var item = await _itemsRepository.GetById(itemId);
+            var item = await _itemsRepository.GetById(userId, itemId);
 
             if(item == null)
                 return NotFound();
@@ -41,9 +42,9 @@ namespace ToDo.API.Controllers
         [Produces(typeof(IReadOnlyList<ToDoItemGetDto>))]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<IReadOnlyList<ToDoItemGetDto>>> GetToDoItemsAsync()
+        public async Task<ActionResult<IReadOnlyList<ToDoItemGetDto>>> GetToDoItemsAsync([FromQuery] Guid userId)
         {
-            var items = await _itemsRepository.GetAll();
+            var items = await _itemsRepository.GetAll(userId);
 
             if (items.Any() == false)
                 return NotFound();
@@ -60,7 +61,7 @@ namespace ToDo.API.Controllers
 
             await _itemsRepository.CreateItemAsync(mappedItem);
 
-            var itemFromDb = _itemsRepository.GetById(mappedItem.Id);
+            var itemFromDb = _itemsRepository.GetById(mappedItem.UserId, mappedItem.Id);
 
             return CreatedAtRoute("GetItem", new {ItemId = itemFromDb.Id}, itemFromDb);
         }
