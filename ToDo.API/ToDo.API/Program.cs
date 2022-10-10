@@ -1,4 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using ToDo.API.DataAccess;
+using ToDo.API.DbContexts;
 using ToDo.API.Mappers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,8 +22,13 @@ builder.Host.ConfigureAppConfiguration((context, config) =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(typeof(ToDoItemProfile));
-builder.Services.AddSingleton(typeof(IToDoItemsRepository), typeof(ToDoItemsRepository));
-builder.Services.AddSingleton(typeof(IUsersRepository), typeof(UsersRepository));
+builder.Services.AddDbContext<ToDoApiContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DbConnection"));
+});
+
+builder.Services.AddScoped(typeof(IToDoItemsRepository), typeof(ToDoItemsRepository));
+builder.Services.AddScoped(typeof(IUsersRepository), typeof(UsersRepository));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

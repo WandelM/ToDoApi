@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ToDo.API.DataAccess;
 using ToDo.API.Dtos;
+using ToDo.API.Models;
 
 namespace ToDo.API.Controllers
 {
@@ -19,13 +20,13 @@ namespace ToDo.API.Controllers
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        [HttpGet]
+        [HttpGet(Name = "UserGet")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
         [ProducesResponseType(400)]
         public async Task<ActionResult<UserGetDto>> GetUserAsync([FromQuery] Guid userId)
         {
-            var user = _usersRepository.Get(userId);
+            var user = await _usersRepository.GetAsync(userId);
 
             await Task.CompletedTask;
 
@@ -33,6 +34,25 @@ namespace ToDo.API.Controllers
                 return NotFound();
 
             return Ok(_mapper.Map<UserGetDto>(user));
+        }
+
+        [HttpPost("register")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(400)]
+        public async Task<ActionResult> RegisterAsync([FromBody] UserPostDto registerUser)
+        {
+            if (registerUser == null) throw new NullReferenceException(nameof(registerUser));
+
+            var userExists = await _usersRepository.GetByNameAsync(registerUser.UserName);
+
+            if (userExists != null) return BadRequest("User already exists.");
+
+            var mapped = _mapper.Map<UserModel>(registerUser);
+
+            await _usersRepository.AddAsync(mapped);
+
+            return CreatedAtRoute("UserGet", mapped.Id);
         }
     }
 }

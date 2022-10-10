@@ -30,7 +30,7 @@ namespace ToDo.API.Controllers
             if (itemId.Equals(Guid.Empty))
                 return BadRequest();
 
-            var item = await _itemsRepository.GetById(userId, itemId);
+            var item = await _itemsRepository.GetByIdAsync(userId, itemId);
 
             if(item == null)
                 return NotFound();
@@ -44,7 +44,7 @@ namespace ToDo.API.Controllers
         [ProducesResponseType(404)]
         public async Task<ActionResult<IReadOnlyList<ToDoItemGetDto>>> GetToDoItemsAsync([FromQuery] Guid userId)
         {
-            var items = await _itemsRepository.GetAll(userId);
+            var items = await _itemsRepository.GetAllAsync(userId);
 
             if (items.Any() == false)
                 return NotFound();
@@ -61,7 +61,7 @@ namespace ToDo.API.Controllers
 
             await _itemsRepository.CreateItemAsync(mappedItem);
 
-            var itemFromDb = _itemsRepository.GetById(mappedItem.UserId, mappedItem.Id);
+            var itemFromDb = _itemsRepository.GetByIdAsync(mappedItem.UserId, mappedItem.Id);
 
             return CreatedAtRoute("GetItem", new {ItemId = itemFromDb.Id}, itemFromDb);
         }

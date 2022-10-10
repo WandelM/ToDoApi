@@ -17,6 +17,8 @@ namespace ToDo.API.DbContexts
             //ToDoItem configuration
             modelBuilder.Entity<ToDoItem>().HasKey(i => i.Id);
 
+            modelBuilder.Entity<ToDoItem>().HasIndex(i => i.UserId);
+
             modelBuilder.Entity<ToDoItem>().Property(i => i.Id)
                                            .IsRequired()
                                            .HasDefaultValue(Guid.NewGuid());
@@ -40,7 +42,27 @@ namespace ToDo.API.DbContexts
                                            .HasDefaultValue(DateTime.UtcNow.AddDays(30));
 
             //User
+            modelBuilder.Entity<UserModel>().HasKey(u => u.Id);
 
+            modelBuilder.Entity<UserModel>().HasIndex(u => u.UserName);
+
+            modelBuilder.Entity<UserModel>().Property(u => u.Id)
+                                            .IsRequired()
+                                            .HasDefaultValue(Guid.NewGuid());
+
+            modelBuilder.Entity<UserModel>().Property(u => u.UserName)
+                                            .IsRequired()
+                                            .HasMaxLength(100);
+
+            modelBuilder.Entity<UserModel>().Property(u => u.Password)
+                                            .IsRequired()
+                                            .HasMaxLength(50);
+
+            modelBuilder.Entity<UserModel>().Property(u => u.CreatedDate)
+                                            .HasDefaultValue(DateTime.UtcNow);
+
+            modelBuilder.Entity<UserModel>().Property(u => u.LastLogIn)
+                                            .HasDefaultValue(null);
         }
     }
 }

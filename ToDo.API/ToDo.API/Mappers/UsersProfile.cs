@@ -10,6 +10,9 @@ namespace ToDo.API.Mappers
         {
             CreateMap<UserModel, UserGetDto>();
 
+            CreateMap<UserPostDto, UserModel>()
+                .ForMember(u => u.Id, opt => opt.MapFrom(o => Guid.NewGuid()))
+                .ForMember(u => u.CreatedDate, opt => opt.MapFrom(o => DateTime.UtcNow));
         }
     }
 }
